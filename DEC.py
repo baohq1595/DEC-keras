@@ -88,7 +88,7 @@ class ClusteringLayer(Layer):
         assert len(input_shape) == 2
         input_dim = input_shape[1]
         self.input_spec = InputSpec(dtype=K.floatx(), shape=(None, input_dim))
-        self.clusters = self.add_weight((self.n_clusters, input_dim), initializer='glorot_uniform', name='clusters')
+        self.clusters = self.add_weight(shape=(self.n_clusters, input_dim), initializer='glorot_uniform', name='clusters')
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
             del self.initial_weights
@@ -138,7 +138,7 @@ class DEC(object):
         clustering_layer = ClusteringLayer(self.n_clusters, name='clustering')(self.encoder.output)
         self.model = Model(inputs=self.encoder.input, outputs=clustering_layer)
 
-    def pretrain(self, x, y=None, optimizer='adam', epochs=200, batch_size=256, save_dir='results/temp'):
+    def pretrain(self, x, y=None, grps=None, optimizer='adam', epochs=200, batch_size=256, save_dir='results/temp'):
         print('...Pretraining...')
         self.autoencoder.compile(optimizer=optimizer, loss='mse')
 
@@ -161,9 +161,10 @@ class DEC(object):
                     km = KMeans(n_clusters=len(np.unique(self.y)), n_init=20, n_jobs=4)
                     y_pred = km.fit_predict(features)
                     # print()
-                    print(' '*8 + '|==>  acc: %.4f,  nmi: %.4f  <==|'
-                          % (metrics.acc(self.y, y_pred), metrics.nmi(self.y, y_pred)))
+                    # print(' '*8 + '|==>  acc: %.4f,  nmi: %.4f  <==|'
+                    #       % (metrics.acc(self.y, y_pred), metrics.nmi(self.y, y_pred)))
 
+                    print(' '*8 + '|==>  acc: %.4f <==|' % (metrics.genome_acc(grps, y_pred, self.y, 2)[1]))
             cb.append(PrintACC(x, y))
 
         # begin pretraining
@@ -192,7 +193,7 @@ class DEC(object):
     def compile(self, optimizer='sgd', loss='kld'):
         self.model.compile(optimizer=optimizer, loss=loss)
 
-    def fit(self, x, y=None, maxiter=2e4, batch_size=256, tol=1e-3,
+    def fit(self, x, y=None, grps=None, maxiter=2e4, batch_size=256, tol=1e-3,
             update_interval=140, save_dir='./results/temp'):
 
         print('Update interval', update_interval)
@@ -225,13 +226,16 @@ class DEC(object):
                 # evaluate the clustering performance
                 y_pred = q.argmax(1)
                 if y is not None:
-                    acc = np.round(metrics.acc(y, y_pred), 5)
-                    nmi = np.round(metrics.nmi(y, y_pred), 5)
-                    ari = np.round(metrics.ari(y, y_pred), 5)
+                    # acc = np.round(metrics.acc(y, y_pred), 5)
+                    # nmi = np.round(metrics.nmi(y, y_pred), 5)
+                    # ari = np.round(metrics.ari(y, y_pred), 5)
+                    acc = np.round(metrics.genome_acc(grps, y_pred, y, 2), 5)[1]
                     loss = np.round(loss, 5)
-                    logdict = dict(iter=ite, acc=acc, nmi=nmi, ari=ari, loss=loss)
+                    # logdict = dict(iter=ite, acc=acc, nmi=nmi, ari=ari, loss=loss)
+                    logdict = dict(iter=ite, acc=acc, loss=loss)
                     logwriter.writerow(logdict)
-                    print('Iter %d: acc = %.5f, nmi = %.5f, ari = %.5f' % (ite, acc, nmi, ari), ' ; loss=', loss)
+                    # print('Iter %d: acc = %.5f, nmi = %.5f, ari = %.5f' % (ite, acc, nmi, ari), ' ; loss=', loss)
+                    print('Iter %d: acc = %.5f, nmi = --, ari = --' % (ite, acc), ' ; loss=', loss)
 
                 # check stop criterion
                 delta_label = np.sum(y_pred != y_pred_last).astype(np.float32) / y_pred.shape[0]
@@ -270,13 +274,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='train',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--dataset', default='mnist',
-                        choices=['mnist', 'fmnist', 'usps', 'reuters10k', 'stl'])
+    parser.add_argument('--dataset', default='gen',
+                        choices=['mnist', 'fmnist', 'usps', 'reuters10k', 'stl', 'gen'])
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--maxiter', default=2e4, type=int)
     parser.add_argument('--pretrain_epochs', default=None, type=int)
     parser.add_argument('--update_interval', default=None, type=int)
-    parser.add_argument('--tol', default=0.001, type=float)
+    parser.add_argument('--tol', default=0.0001, type=float)
     parser.add_argument('--ae_weights', default=None)
     parser.add_argument('--save_dir', default='results')
     args = parser.parse_args()
@@ -286,8 +290,20 @@ if __name__ == "__main__":
         os.makedirs(args.save_dir)
 
     # load dataset
-    from datasets import load_data
-    x, y = load_data(args.dataset)
+    from datasets import load_data, load_genomics
+    from utils.utils import *
+    # x, y = load_data(args.dataset)
+    x, y, grps = load_genomics(
+        '../vae-dec/data/gene/S1.fna',
+        kmers=[4],
+        lmer=20,
+        maximum_group_size=5000,
+        num_shared_reads=5,
+        is_deserialize=False,
+        is_serialize=False,
+        is_normalize=True,
+        only_seed=True
+    )
     n_clusters = len(np.unique(y))
 
     init = 'glorot_uniform'
@@ -311,6 +327,12 @@ if __name__ == "__main__":
     elif args.dataset == 'stl':
         update_interval = 30
         pretrain_epochs = 10
+    elif args.dataset == 'gen':
+        update_interval = 30
+        pretrain_epochs = 50
+        init = VarianceScaling(scale=1. / 3., mode='fan_in',
+                               distribution='uniform')  # [-limit, limit], limit=sqrt(1./fan_in)
+        pretrain_optimizer = SGD(lr=0.1, momentum=0.9)
 
     if args.update_interval is not None:
         update_interval = args.update_interval
@@ -321,7 +343,7 @@ if __name__ == "__main__":
     dec = DEC(dims=[x.shape[-1], 500, 500, 2000, 10], n_clusters=n_clusters, init=init)
 
     if args.ae_weights is None:
-        dec.pretrain(x=x, y=y, optimizer=pretrain_optimizer,
+        dec.pretrain(x=x, y=y, grps=grps, optimizer=pretrain_optimizer,
                      epochs=pretrain_epochs, batch_size=args.batch_size,
                      save_dir=args.save_dir)
     else:
@@ -330,7 +352,7 @@ if __name__ == "__main__":
     dec.model.summary()
     t0 = time()
     dec.compile(optimizer=SGD(0.01, 0.9), loss='kld')
-    y_pred = dec.fit(x, y=y, tol=args.tol, maxiter=args.maxiter, batch_size=args.batch_size,
+    y_pred = dec.fit(x=x, y=y, grps=grps, tol=args.tol, maxiter=args.maxiter, batch_size=args.batch_size,
                      update_interval=update_interval, save_dir=args.save_dir)
-    print('acc:', metrics.acc(y, y_pred))
+    print('acc:', metrics.genome_acc(grps, y_pred, y, n_clusters)[1])
     print('clustering time: ', (time() - t0))

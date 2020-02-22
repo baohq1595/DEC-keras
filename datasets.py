@@ -1,4 +1,5 @@
 import numpy as np
+from dataloader.metagenomics_dataset import GenomeDataset_v3
 
 
 def extract_vgg16_features(x):
@@ -179,7 +180,7 @@ def load_reuters(data_path='./data/reuters'):
         print('making reuters idf features')
         make_reuters_data(data_path)
         print(('reutersidf saved to ' + data_path))
-    data = np.load(os.path.join(data_path, 'reutersidf10k.npy')).item()
+    data = np.load(os.path.join(data_path, 'reutersidf10k.npy'), allow_pickle=True).item()
     # has been shuffled
     x = data['data']
     y = data['label']
@@ -187,6 +188,28 @@ def load_reuters(data_path='./data/reuters'):
     y = y.reshape((y.size,))
     print(('REUTERSIDF10K samples', x.shape))
     return x, y
+
+def load_genomics(dataset_name,
+                    kmers, 
+                    lmer,
+                    maximum_group_size,
+                    num_shared_reads,
+                    graph_file=None,
+                    is_serialize=False,
+                    is_deserialize=False,
+                    is_normalize=False,
+                    only_seed=False):
+    genomics_dataset = GenomeDataset_v3(
+        dataset_name, kmers, lmer,
+        graph_file=graph_file,
+        only_seed=only_seed,
+        maximum_group_size=maximum_group_size,
+        num_shared_reads=num_shared_reads,
+        is_serialize=is_serialize,
+        is_deserialize=is_deserialize,
+        is_normalize=is_normalize)
+
+    return genomics_dataset.kmer_features, genomics_dataset.labels, genomics_dataset.groups
 
 
 def load_retures_keras():

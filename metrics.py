@@ -1,9 +1,16 @@
 import numpy as np
 from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score
 
+from utils.utils import *
+
 nmi = normalized_mutual_info_score
 ari = adjusted_rand_score
 
+def genome_acc(grps, pred_grps, y_true, n_cluters):
+    groups_cluster_lb = assign_cluster_2_reads(grps, pred_grps)
+    prec, recall = eval_quality(y_true, groups_cluster_lb, n_clusters=n_cluters)
+    return prec, recall
+    
 
 def acc(y_true, y_pred):
     """
