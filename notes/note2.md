@@ -2,6 +2,7 @@
 
 
 ### Parameters
+- Partition method: multi-level graph partitioning
 - Network architecture (applied for all dataset): 136-500-1000-10.
 - Learning rate: using default learning rate (0.01).
 - Number of shared read for buidling graph: 5 for L, S dataset; 45 for R dataset.
