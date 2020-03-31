@@ -36,9 +36,14 @@
 |Dataset|Precision|Recall|F1-score|F1 BiMeta|F1 MetaProb|
 |-------|---------|------|--------|---------|-----------|
 |R1|0.943|0.943|0.943|0.609|0.971|
-|R2|0.858|0.858|0.858|0.773|0.968|
-|R3|0.814|0.814|0.814|0.780|0.928|
+|R2|0.915|0.915|0.915|0.773|0.968|
+|R3|0.858|0.858|0.858|0.780|0.928|
 |R4|0.992|0.992|0.992|0.992|0.993|
+|R5|0.994|0.994|0.994|0.988|0.998|
+|R6|0.979|0.979|0.979|0.953|0.994|
+|R7|0.955|0.924|0.939|0.890|0.986|
+|R8|0.955|0.932|0.943|0.980|0.994|
+|R9|0.947|0.830|0.884|0.860|0.881|
 
 
 #### Visualization of Lx dataset
@@ -59,7 +64,11 @@
 |<img width="1604" alt="seed-R2" src="20200320images/seed-R2.png"> R2 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R2.png"> R2 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R2.png"> R2 latent prediction|
 |<img width="1604" alt="seed-R3" src="20200320images/seed-R3.png"> R3 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R3.png"> R3 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R3.png"> R3 latent prediction|
 |<img width="1604" alt="seed-R4" src="20200320images/seed-R4.png"> R4 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R4.png"> R4 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R4.png"> R4 latent prediction|
-
+|<img width="1604" alt="seed-R5" src="20200320images/seed-R5.png"> R5 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R5.png"> R5 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R5.png"> R5 latent prediction|
+|<img width="1604" alt="seed-R6" src="20200320images/seed-R6.png"> R6 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R6.png"> R6 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R6.png"> R6 latent prediction|
+|<img width="1604" alt="seed-R7" src="20200320images/seed-R7.png"> R7 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R7.png"> R7 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R7.png"> R7 latent prediction|
+|<img width="1604" alt="seed-R8" src="20200320images/seed-R8.png"> R8 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R8.png"> R8 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R8.png"> R8 latent prediction|
+|<img width="1604" alt="seed-R9" src="20200320images/seed-R9.png"> R9 seeds' representation |<img width="1604" alt="gt-seed-latent" src="20200320images/gt-seed-latent-R9.png"> R9 latent groundtruth |<img width="1604" alt="pred-seed-latent" src="20200320images/pred-seed-latent-R9.png"> R9 latent prediction|
 
 #### Visualization of Sx dataset
 
